@@ -1,0 +1,14 @@
+node_modules/
+.svelte-kit/
+build/
+.sites-runtime/
+.DS_Store
+.pnpm-store/
+.codex/
+.agents/
+.env
+.env.*
+!.env.example
+*.log
+archive/
+design-review/
