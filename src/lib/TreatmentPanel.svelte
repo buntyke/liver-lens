@@ -1,23 +1,6 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
-  import { explanation, treatments, type TreatmentId, type TreatmentResult } from './rules';
-  let {selected, result, reduced=false}: {selected: TreatmentId | null; result: TreatmentResult | null; reduced?: boolean} = $props();
-  const statuses={discuss:'An option to discuss',assess:'Needs clinical assessment',unknown:'More information needed',not:'Not recommended in this simple pathway'};
+ import { explanation, type TreatmentId, type TreatmentResult } from './rules';
+ let {selected,result}: {selected:TreatmentId|null;result:TreatmentResult|null}=$props();
+ const statuses={discuss:'An option to discuss',assess:'Needs clinical assessment',unknown:'More information needed',not:'Not recommended in this pathway'};
 </script>
-
-<div class="explanation-slot" aria-live="polite" aria-atomic="true">
-  {#if selected && result}
-    {#key selected}
-      <section class="treatment-panel" in:fade={{duration:reduced?0:180}} aria-labelledby="treatment-heading">
-        <h2 id="treatment-heading">{treatments.find(t=>t.id===selected)?.name}</h2>
-        <div class="assessment" class:discussion={result.status==='discuss'} data-status={result.status}>
-          <h3>{statuses[result.status]}</h3><p>{result.reason}</p>
-        </div>
-        {#each explanation[selected] as paragraph}<p class="treatment-copy">{paragraph}</p>{/each}
-        <details class="rule-details"><summary>Why this result?</summary><p>{result.rule}</p><p>Educational <a href="https://doi.org/10.1016/j.jhep.2021.11.018" target="_blank" rel="noreferrer">BCLC 2022</a> subset; the 2026 update is not implemented. These inputs do not establish personal eligibility.</p><p>Mechanisms: <a href="https://www.cancer.gov/types/liver/what-is-liver-cancer/treatment" target="_blank" rel="noreferrer">National Cancer Institute</a>.</p></details>
-      </section>
-    {/key}
-  {:else}
-    <div class="empty-explanation"><span class="empty-symbol" aria-hidden="true">✳</span><p>Choose a treatment to see how it works.</p></div>
-  {/if}
-</div>
+{#if selected&&result}<section class="assessment" data-status={result.status} aria-live="polite"><span class="section-kicker">WHOLE-CASE CONTEXT</span><h3>{statuses[result.status]}</h3><details class="inline-help"><summary>Why this result?</summary><p>{result.reason}</p><p>{result.rule}</p><p>Every recorded lesion and the completeness of the list matter. Selecting a target changes only the illustration.</p></details><details class="inline-help"><summary>Learn more & sources</summary>{#each explanation[selected] as text}<p>{text}</p>{/each}<p>Educational <a href="https://doi.org/10.1016/j.jhep.2021.11.018" target="_blank" rel="noreferrer">BCLC 2022</a> subset; the <a href="https://pubmed.ncbi.nlm.nih.gov/41151697/" target="_blank" rel="noreferrer">2026 update</a> is not implemented. No personal eligibility is established.</p><p>Mechanisms: <a href="https://www.cancer.gov/types/liver/what-is-liver-cancer/treatment" target="_blank" rel="noreferrer">National Cancer Institute</a>. Anatomy: <a href="https://pubmed.ncbi.nlm.nih.gov/21326548/" target="_blank" rel="noreferrer">Hepatic microcirculation</a>.</p></details></section>{/if}

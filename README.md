@@ -1,6 +1,6 @@
 # Liver Lens — liver treatment explorer
 
-A two-screen educational proof of concept for reviewing with a clinician: enter a case, then explore four treatment groups. Built with **SvelteKit, TypeScript, SVG and CSS**, using Svelte’s `tweened` motion and `fade` transitions. No backend, database, React, 3D library or game engine.
+A two-screen educational proof of concept: record individual tumours, then explore four treatment groups through short, user-driven visual sequences. Built with **SvelteKit, TypeScript, SVG and CSS**, using Svelte’s `tweened` motion and `fade` transitions. No backend, database, React, 3D library or game engine.
 
 ## Run on your Mac
 
@@ -15,7 +15,7 @@ Open **http://127.0.0.1:5173/** in Safari, Chrome or the Codex browser. The serv
 
 ```sh
 pnpm check       # Svelte + TypeScript diagnostics
-pnpm test        # Nine focused clinical-rule regression tests
+pnpm test        # Eleven focused model and clinical-rule tests
 pnpm build       # GitHub Pages static files in docs/
 pnpm preview     # Preview at http://127.0.0.1:4173/liver-lens/
 ```
@@ -51,24 +51,33 @@ Inspect **http://127.0.0.1:4173/liver-lens/**, then commit and push both source 
 | File | Responsibility |
 | --- | --- |
 | `src/routes/+page.svelte` | Two-screen state, four treatment controls, navigation and optional WebMCP registration |
-| `src/lib/CaseForm.svelte` | Seven inputs, fictional examples, validation and labels |
+| `src/lib/CaseForm.svelte` | Individual tumour rows, list completeness, clinical inputs and fictional cases |
+| `src/lib/tumours.ts` | Lesion list, stable labels, add/remove/select helpers and conservative aggregate values |
 | `src/lib/rules.ts` | Typed case model, pure `evaluate()` function, rule explanations, sample values |
-| `src/lib/Anatomy.svelte` | Original SVG organs, tumour markers, zoom and procedure playback |
-| `src/lib/artwork.ts` | Shared rounded liver outline used by both screens |
+| `src/lib/Anatomy.svelte` | Layered SVG liver, separate vessel trees, target selection, focus and step/scrub mechanisms |
+| `src/lib/artwork.ts` | Small liver silhouette for the case-screen vignette |
 | `src/lib/OrganVignette.svelte` | Small case-sheet organ drawing on the case screen |
-| `src/lib/TreatmentPanel.svelte` | Neutral initial panel, assessment status and short treatment explanations |
-| `src/app.css` | Warm palette, typography, component layout and responsive breakpoints |
+| `src/lib/TreatmentPanel.svelte` | Compact whole-case status and optional reasons, explanations and sources |
+| `src/app.css` | Cool blue palette, typography, responsive layout and focus styles |
 | `tests/rules.test.ts` | Unknowns, boundaries, function impairment and other meaningful clinical branches |
 | `src/routes/+layout.ts` | Static prerendering option |
 | `svelte.config.js` | Static adapter and preprocessing |
 
 Local draft archives and design-review screenshots are excluded from this repository and are not published.
 
-To change a rule, edit `evaluate()` and update the affected regression test. Results are `discuss`, `assess`, `unknown` or `not`; none means a person is cleared for treatment. `visual` determines whether a general mechanism plays. The `variant` field chooses resection versus transplant within the one Surgery button.
+## Data and interaction model
 
-To edit artwork, start with `liverPath` in `artwork.ts` and the labelled SVG groups in `Anatomy.svelte`. The same liver outline appears in `OrganVignette.svelte` on screen one. Coordinates are in a 600 × 480 front-view space. The patient’s right appears on the viewer’s left. The lobe highlight, tumour size marker and count symbols respond to the inputs. Exact shapes, positions, relative size scaling, blood vessels and probe trajectory are teaching schematics, not patient anatomy. Additional dots have unknown sizes and illustrative positions. “4 or more” uses four symbols; diffuse disease uses a field pattern. Unknown location remains unplotted until a clearly labelled generic mechanism is selected.
+`CaseInput` contains a `pattern` (unknown, individually listed, or diffuse), `coverage` (unknown, complete, or partial), a list of tumours, and the four clinical context fields. Each tumour has a stable `T` label, size in cm, lobe and approximate upper/middle/lower area. Sizes can be unknown. Lists support up to 12 lesions; the UI explicitly asks whether all lesions were recorded and calls out the drawing limit. Partial lists never become a known total count. Removing the final row returns to an unknown pattern rather than inventing a zero-tumour diagnosis.
 
-Playback is a single eight-second sequence, with pause, resume, replay and a still view. The operating-system reduced-motion preference disables playback and zoom transitions. No treatment, result or motion appears when screen two opens. Returning to edit clears the previous selection.
+`aggregate()` derives the complete count and largest size for the existing clinical subset. If even one recorded size is missing, the aggregate size remains unknown. A separate largest-known value is never used as a complete maximum. All recorded tumours contribute to assessment; selecting a target affects only the drawing. Clinical function and known spread/invasion retain priority over simple burden mapping. To change a rule, edit `evaluate()` and its meaningful regression tests.
+
+The explorer starts neutral. Choose a treatment, choose a lesion from the diagram or list, and advance with the labelled action, numbered steps, or keyboard-operable progress slider. No sequence starts automatically. Reset returns to the first frame. “Still steps” disables the short between-step transitions; the OS reduced-motion preference uses the same instant rendering path and disables zoom transitions. Navigation back to the case retains entered details and clears treatment selection.
+
+The vessel buttons separately reveal hepatic arterial inflow, portal venous inflow and hepatic venous drainage. TACE keeps the hepatic artery visible and moves a catheter and particles along the same schematic arterial feeder; it does not use the portal or hepatic veins as delivery routes. Ablation illustrates probe placement and a growing local zone. Resection and transplant are separate surgery mechanisms; medicines illustrate systemic circulation. Generic mechanisms remain accessible alongside unknown, assessment-needed or not-recommended case states, labelled as mechanism-only exploration. They do not establish candidacy.
+
+The SVG stage uses original vector layers, shading and natural organ colours. It is an 840 × 590 schematic, with the person’s right on the viewer’s left. Recorded lesion diameters share a linear drawing scale; tiny lesions have a minimum visible dot size. Every lesion remains in the list. Unknown lobes stay in an unmapped tray; selecting one uses an explicitly labelled generic site for a local sequence. Approximate regions, overlapping lesions, vessel branches, resection outlines, probe paths and treatment zones are illustrative, never imaging coordinates or safe procedure plans. A local target illustration does not treat the other recorded lesions. There is no response prediction, cure score, dose control or precise needle-navigation exercise.
+
+The supplied medical reference images informed the clarity of the new probe, zone and catheter diagrams; the images themselves are not embedded or copied. Device-specific zone geometries, combined therapies and heat-sink thresholds were not implemented. The interface’s calm step-by-step controls draw general inspiration from the developer’s [Satistory listing](https://play.google.com/store/apps/details?hl=en&id=com.tidy.satis.asmr); no claim is made about playing or reproducing its levels.
 
 ## Clinical scope and sources
 
@@ -78,7 +87,7 @@ The rule framework is a deliberately small subset of **Reig et al., BCLC 2022**,
 
 The [2026 BCLC update](https://pubmed.ncbi.nlm.nih.gov/41151697/) exists, DOI 10.1016/j.jhep.2025.10.020; its PubMed record also identifies a June 2026 erratum. Full 2026 recommendations and the erratum have **not** been implemented or validated here. The optional “Why this result?” help states this distinction.
 
-Treatment mechanism descriptions use the [National Cancer Institute treatment overview](https://www.cancer.gov/types/liver/what-is-liver-cancer/treatment).
+Treatment mechanism descriptions use the [National Cancer Institute treatment overview](https://www.cancer.gov/types/liver/what-is-liver-cancer/treatment). Separate arterial and portal inflow are supported by the [NCI clinical overview](https://www.cancer.gov/types/liver/hp/adult-liver-treatment-pdq) and [Hepatic microcirculation](https://pubmed.ncbi.nlm.nih.gov/21326548/); hepatic venous drainage is described in the [Portal venous system anatomy review](https://pubmed.ncbi.nlm.nih.gov/32119476/). These were checked during this draft. The BCLC 2022 multiple-small-lesion branch requires all 2–3 nodules to be ≤3 cm, not only the selected lesion.
 
 Key implementation limits:
 
@@ -91,10 +100,10 @@ Key implementation limits:
 
 ## Review the prototype
 
-Try “One small tumour” first. Screen two should open without a selected treatment. Explore Surgery and Ablation, zoom in, pause/replay or use Still view. Artery treatment explains missing assessment information; Medicines shows the simple-pathway reason.
+Try “Four different tumours”. Change one size or location, add/remove a lesion, and verify whether the list is complete. On screen two, select a tumour directly or use its labelled card. Toggle each vessel, then explore Ablation and Artery treatment with the stage controls. Try the focused view to inspect probe, zone and particles. Surgery offers resection and transplant sequences; Medicines shows a whole-body mechanism. Open “Why this result?” for the independent whole-case assessment.
 
-Then try “Cancer with spread”: Medicines plays its mechanism, while local-treatment groups explain why this prototype’s initial pathway does not recommend them. “Start with unknown details” should leave location unplotted and show information-needed results only after a click. “Several liver tumours” tests count/bilobar rendering and TACE uncertainty.
+Try unknown fields and an incomplete list: they must remain unknown in the result. An unlocated tumour must remain in the unmapped tray until a clearly labelled generic mechanism is selected. Return to edit and check that the explorer reopens without a selected treatment.
 
-The optional `explore_treatment` WebMCP tool is feature-detected; it selects one of the same four treatments only when the explorer is already open. Unsupported browsers retain all ordinary UI functionality.
+The optional `explore_treatment` WebMCP tool still accepts only a treatment ID. It uses the current full case and resets the visible mechanism to its first step. It neither alters tumour entries nor advances the sequence. Unsupported browsers retain all ordinary UI controls.
 
-This prototype needs clinician feedback on the rule subset, explanation granularity and artwork before any use beyond education and design review.
+This second version preserves the existing GitHub Pages configuration. Clinician review of the drawing and rule subset is still needed before use beyond education and design review.

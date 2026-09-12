@@ -1,5 +1,23 @@
 # Prototype verification
 
+## Second version verification
+
+Verified on 12 September 2026. The earlier sections below describe the initial published version and its previous controls.
+
+- Svelte/TypeScript: 0 errors and 0 warnings. All 11 updated model/rule tests passed. Static production build succeeded. Staged source/documentation whitespace checks passed; the generated JavaScript contains a compiler-produced whitespace string literal that Git flags, which is preserved unchanged.
+- Individual tumour add/remove, per-lesion sizes and locations, selection fallback, 12-lesion bound, unknown sizes, incomplete counts, and whole-case assessment independent of the selected target are covered by focused tests.
+- Browser: input examples, add/remove, neutral explorer, all four treatment groups, separate resection/transplant sequences, ablation probe/zone, arterial catheter/particles and systemic mechanism exercised. Sequences advance through explicit controls.
+- Browser: diagram target selection with Enter, vessel toggles, focus view, still steps, progress-slider End key, optional help and source disclosures verified. Editing retained sizes, unknown location and partial-list coverage; reopening cleared treatment selection.
+- Production output served under `/liver-lens/`: both screens and assets worked, the unknown-lobe tray remained explicit, and a generic mechanism retained the independent incomplete-case assessment. Final production console check returned no warnings or errors.
+- Mobile 390 × 844: form and explorer inspected, help and focused TACE exercised, and document width matched viewport width. Desktop 1440 × 1000: form, vessel layers, target selection and treatment controls inspected.
+- Three review screenshots are saved in ignored `design-review/`: `v2-form-desktop.png`, `v2-ablation-desktop.png`, and `v2-tace-mobile.png`.
+
+The OS reduced-motion preference was not changed; the manual still-steps path was exercised. Cross-browser/device testing and clinician validation remain outstanding. Geometry, generic target sites, vessel branches and treatment zones remain schematic; closely placed lesions can overlap, with every recorded lesion accessible in the list. The 2026 BCLC update is not implemented. No real patient data was used.
+
+These checks were performed locally before committing and publishing the second version. Source and matching generated `docs/` output are included together; ignored screenshots and local caches remain excluded.
+
+## Initial version verification
+
 Verified locally on 12 September 2026 using Node 24.19.0 and the Codex in-app browser.
 
 - Svelte/TypeScript diagnostics: 0 errors and 0 warnings.
